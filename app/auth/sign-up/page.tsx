@@ -5,30 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { FormEvent } from 'react';
-import { signIn } from 'next-auth/react';
 
-export default function SignInPage() {
-  const router = useRouter();
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const response = await signIn('credentials', {
-      email: formData.get('email'),
-      password: formData.get('password'),
-      redirect: false,
-    });
-
-    if (response?.ok) {
-      router.push('/');
-    } else {
-      alert('Login failed');
-    }
-  }
-
+export default function SignUpPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
@@ -40,26 +18,38 @@ export default function SignInPage() {
           </Link>
 
           <h2 className="text-2xl font-bold text-center mb-6 text-foreground">
-            Sign In
+            Sign Up
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input id="firstName" placeholder="John" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input id="lastName" placeholder="Doe" required />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 placeholder="your@email.com"
                 required
-                autoComplete="email"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
+              <Input id="password" type="password" required />
             </div>
-            <Button className="w-full mt-4">Sign In</Button>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Re-enter Password</Label>
+              <Input id="confirmPassword" type="password" required />
+            </div>
+            <Button className="w-full mt-4">Sign Up</Button>
           </form>
 
           <div className="mt-6">
@@ -78,12 +68,12 @@ export default function SignInPage() {
           </div>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Don&#39;t have an account?{' '}
+            Already have an account?{' '}
             <Link
-              href="/auth/sign-up"
+              href="/auth/login"
               className="font-medium text-primary hover:underline"
             >
-              Sign up
+              Sign in
             </Link>
           </p>
         </div>
