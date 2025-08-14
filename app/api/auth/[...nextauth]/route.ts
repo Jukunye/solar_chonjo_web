@@ -49,6 +49,7 @@ const handler = NextAuth({
           }
 
           const userData = await userResponse.json();
+          const accessTokenExpires = Date.now() + 2 * 60 * 60 * 1000;
 
           // 3. Return combined data
           return {
@@ -58,9 +59,10 @@ const handler = NextAuth({
               userData.name ||
               userData.username ||
               userData.email.split('@')[0],
-            ...userData, // Include all user data
+            ...userData,
             accessToken: tokens.access,
             refreshToken: tokens.refresh,
+            accessTokenExpires,
           };
         } catch (error) {
           console.error('Login error:', error);
@@ -75,20 +77,57 @@ const handler = NextAuth({
     error: '/auth/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       // Initial sign in
-      if (user) {
+      if (user && account) {
         return {
           ...token,
-          ...user, // Include all user data in the token
+          ...user,
         };
       }
-      return token;
+
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token;
+      }
+
+      // Token is expired, try to refresh it
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/jwt/refresh/`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              refresh: token.refreshToken,
+            }),
+          }
+        );
+
+        const refreshedTokens = await response.json();
+
+        if (!response.ok) {
+          throw refreshedTokens;
+        }
+
+        // Update the tokens and expiration
+        return {
+          ...token,
+          accessToken: refreshedTokens.access,
+          accessTokenExpires: Date.now() + 2 * 60 * 60 * 1000,
+          refreshToken: refreshedTokens.refresh || token.refreshToken,
+        };
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+        // Force the user to log in again
+        return { ...token, error: 'RefreshAccessTokenError' };
+      }
     },
     async session({ session, token }) {
       session.user = {
         ...session.user,
-        ...token, // Include all token data in the session
+        ...token,
       };
       return session;
     },
