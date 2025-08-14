@@ -1,12 +1,16 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { FormEvent } from 'react';
+import { signIn } from 'next-auth/react';
 
 export default function SignInPage() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,112 +29,84 @@ export default function SignInPage() {
     }
   }
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
   return (
-    <div
-      className={`min-h-screen flex flex-col items-center justify-center p-4 ${
-        darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
-      }`}
-    >
-      <button
-        onClick={toggleDarkMode}
-        className={`absolute top-4 right-4 p-2 rounded-full ${
-          darkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-200 text-gray-700'
-        }`}
-        aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
-      >
-        {darkMode ? '☀️' : '🌙'}
-      </button>
-
-      <div
-        className={`w-full max-w-md p-8 rounded-lg shadow-md ${
-          darkMode ? 'bg-gray-800' : 'bg-white'
-        }`}
-      >
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className={`block text-sm font-medium mb-1 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="text"
-              required
-              className={`w-full px-3 py-2 border rounded-md ${
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 focus:border-blue-500'
-                  : 'bg-white border-gray-300 focus:border-blue-500'
-              }`}
-              autoComplete="email"
-            />
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md space-y-8">
+        <div className="bg-card p-8 rounded-lg shadow-sm border">
+          <div className="flex items-center mb-6">
+            <Link href="/" className="mr-2">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <h2 className="text-2xl font-bold text-center flex-1 text-foreground">
+              Sign In
+            </h2>
           </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className={`block text-sm font-medium mb-1 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className={`w-full px-3 py-2 border rounded-md ${
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 focus:border-blue-500'
-                  : 'bg-white border-gray-300 focus:border-blue-500'
-              }`}
-              autoComplete="current-password"
-            />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="your@email.com"
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" name="password" type="password" required />
+            </div>
+            <Button className="w-full mt-4">Sign In</Button>
+          </form>
+
+          <div className="mt-6">
+            <Button variant="outline" className="w-full gap-2">
+              <GoogleIcon />
+              Continue with Google
+            </Button>
           </div>
 
-          <button
-            type="submit"
-            className={`w-full py-2 px-4 rounded-md font-medium ${
-              darkMode
-                ? 'bg-blue-600 hover:bg-blue-700'
-                : 'bg-blue-500 hover:bg-blue-600'
-            } text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              darkMode ? 'focus:ring-offset-gray-800' : ''
-            }`}
-          >
-            Sign In
-          </button>
-        </form>
+          <div className="mt-6 text-center">
+            <Link href="/">
+              <Button variant="link" className="text-muted-foreground">
+                Return to home
+              </Button>
+            </Link>
+          </div>
 
-        <div
-          className={`mt-4 text-center text-sm ${
-            darkMode ? 'text-gray-400' : 'text-gray-600'
-          }`}
-        >
-          Don&#39;t have an account?{' '}
-          <a
-            href="#"
-            className={`font-medium ${
-              darkMode
-                ? 'text-blue-400 hover:text-blue-300'
-                : 'text-blue-600 hover:text-blue-500'
-            }`}
-          >
-            Sign up
-          </a>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Don&#39;t have an account?{' '}
+            <Link
+              href="auth/sign-up"
+              className="font-medium text-primary hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21.8 10H12v4h5.7c-.8 2.3-3 4-5.7 4-3.3 0-6-2.7-6-6s2.7-6 6-6c1.7 0 3.2.7 4.2 1.8L19 4.2C17.1 2.4 14.7 1 12 1 5.9 1 1 5.9 1 12s4.9 11 11 11 11-4.9 11-11c0-1.3-.2-2.6-.7-3.8z" />
+    </svg>
   );
 }
