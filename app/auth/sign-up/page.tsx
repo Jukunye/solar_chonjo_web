@@ -1,12 +1,70 @@
 'use client';
 
+import { useState } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import api from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function SignUpPage() {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await api.post('/auth/users/', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        re_password: formData.password,
+      });
+
+      console.log('Signup successful:', response.data);
+      toast.success('Signup successful!');
+      router.push('/auth/login');
+    } catch (err) {
+      console.log(err);
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Signup failed');
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
@@ -21,15 +79,33 @@ export default function SignUpPage() {
             Sign Up
           </h2>
 
-          <form className="space-y-4">
+          {error && (
+            <div className="mb-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="John" required />
+                <Input
+                  id="firstName"
+                  placeholder="John"
+                  required
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Doe" required />
+                <Input
+                  id="lastName"
+                  placeholder="Doe"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
               </div>
             </div>
             <div className="space-y-2">
@@ -39,17 +115,33 @@ export default function SignUpPage() {
                 type="email"
                 placeholder="your@email.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
+              <Input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Re-enter Password</Label>
-              <Input id="confirmPassword" type="password" required />
+              <Input
+                id="confirmPassword"
+                type="password"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
             </div>
-            <Button className="w-full mt-4">Sign Up</Button>
+            <Button className="w-full mt-4" type="submit" disabled={isLoading}>
+              {isLoading ? 'Signing up...' : 'Sign Up'}
+            </Button>
           </form>
 
           <div className="mt-6">
